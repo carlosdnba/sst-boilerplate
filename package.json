@@ -1,0 +1,31 @@
+{
+  "name": "sst-boilerplate",
+  "version": "1.0.0",
+  "author": "Carlos Daniel",
+  "license": "MIT",
+  "scripts": {
+    "start": "sst start",
+    "build": "sst build",
+    "deploy": "sst deploy",
+    "remove": "sst remove",
+    "prepare": "husky install"
+  },
+  "dependencies": {
+    "@serverless-stack/cli": "0.57.4",
+    "@serverless-stack/resources": "0.57.4",
+    "axios": "^0.20.0",
+    "debug": "^4.3.2",
+    "dynamoose": "3.0.0-alpha.6",
+    "lodash": "^4.17.21",
+    "moment": "^2.29.1"
+  },
+  "devDependencies": {
+    "aws-sdk": "^2.1048.0",
+    "husky": "^7.0.0",
+    "lint-staged": "^10.2.2",
+    "standard": "^16.0.4"
+  },
+  "lint-staged": {
+    "*.js": "standard --fix"
+  }
+}

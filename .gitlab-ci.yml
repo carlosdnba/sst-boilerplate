@@ -1,0 +1,56 @@
+image: registry.gitlab.com/dev_squad/ci-base-image:latest
+stages:
+  - install_dependencies
+  - deploy
+after_script:
+  - echo ${CI_JOB_STAGE}:${CI_JOB_NAME} > LAST_JOB
+  
+install_dependencies:
+  stage: install_dependencies
+  script:
+    - npm i
+  cache:
+    key: $CI_COMMIT_REF_SLUG
+    paths:
+      - node_modules
+  rules:
+    - if: "$CI_COMMIT_TAG || $CI_COMMIT_BRANCH"
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+
+stop:
+  stage: deploy
+  allow_failure: true
+  script:
+    - npm i
+    - npm run remove -- --stage=$CI_COMMIT_REF_SLUG
+  when: manual
+  except:
+    - master
+
+deploy:dev:
+  stage: deploy
+  variables:
+    STAGE: $CI_COMMIT_REF_SLUG
+  script:
+    - npm run deploy -- --stage=$CI_COMMIT_REF_SLUG
+  cache:
+    key: $CI_COMMIT_REF_SLUG
+    policy: pull
+    paths:
+      - node_modules
+  except:
+    - master
+
+deploy:live:
+  stage: deploy
+  variables:
+    STAGE: live
+  script:
+      - npm run deploy -- --stage=$STAGE
+  cache:
+    key: $CI_COMMIT_REF_SLUG
+    policy: pull
+    paths:
+      - node_modules
+  only:
+    - master
