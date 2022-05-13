@@ -1,18 +1,28 @@
-import StorageStack from './Storage'
-import ApiStack from './Api'
+import { RemovalPolicy } from 'aws-cdk-lib';
+import Api from './Api';
+import Storage from './Storage';
+import Website from './Website';
+import { buildEnvVarObject, defaultEnvs, vars } from './helpers/env';
 
-export default app => {
+export default function main (app) {
+  // Remove all resources when the dev stage is removed
+  if (app.stage !== 'live') {
+    app.setDefaultRemovalPolicy(RemovalPolicy.DESTROY);
+  }
+
+  const { table } = new Storage(app, 'storage');
+
+  // Set default runtime for all functions
   app.setDefaultFunctionProps({
     timeout: 30,
-    runtime: 'nodejs12.x'
-  })
+    runtime: 'nodejs14.x',
+    environment: {
+      ...buildEnvVarObject(vars),
+      ...defaultEnvs(app),
+    }
+  });
+  app.addDefaultFunctionPermissions([table]);
 
-  const storage = new StorageStack(app, 'storage')
-
-  // Adding permission for all stacks to access the storage
-  app.addDefaultFunctionPermissions([storage.table])
-
-  const api = new ApiStack(app, 'api', {
-    table: storage.table
-  })
+  const { api } = new Api(app, 'api', { table });
+  new Website(app, 'www', { api });
 }
